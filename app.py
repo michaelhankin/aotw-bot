@@ -3,15 +3,24 @@ from slack import WebClient
 from slackeventsapi import SlackEventAdapter
 from dotenv import load_dotenv
 from pathlib import Path
+from flask import Flask
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# TODO: throw exceptions when required env vars are undefined
+app = Flask(__name__)
+
 slack_signing_secret = os.getenv("SLACK_SIGNING_SECRET")
-slack_events_adapter = SlackEventAdapter(slack_signing_secret, "/slack/events")
+if slack_signing_secret is None:
+    raise EnvironmentError(
+        "SLACK_SIGNING_SECRET environment variable must be set")
+slack_events_adapter = SlackEventAdapter(
+    slack_signing_secret, "/slack/events", app)
 
 slack_bot_token = os.getenv("SLACK_BOT_TOKEN")
+if slack_bot_token is None:
+    raise EnvironmentError(
+        "SLACK_BOT_TOKEN environment variable must be set")
 slack_web_client = WebClient(token=slack_bot_token)
 
 
@@ -25,4 +34,5 @@ def handle_mention(event_data):
         slack_web_client.chat_postMessage(channel=channel, text=message)
 
 
-slack_events_adapter.start(port=3000)
+if __name__ == "__main__":
+    app.run(port=3000)
