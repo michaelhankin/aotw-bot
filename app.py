@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from flask import Flask
 from bot import Bot
+import re
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
