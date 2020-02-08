@@ -11,6 +11,7 @@ class Bot:
         text = message.get('text', None)
         if text is None:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
+            return
 
         tokens = text.split(' ')
         command = tokens[1]
@@ -18,6 +19,7 @@ class Bot:
         if command == 'nominate':
             if len(tokens) > 3:
                 self.handle_error(channel, INVALID_NOMINATION_ERROR)
+                return
 
             nomination = tokens[2]
             self.handle_nomination(channel, nomination)
