@@ -30,7 +30,6 @@ class Bot:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
 
     def handle_nomination(self, channel, nomination):
-        print(f'Nomination: {nomination}')
         message = 'Nomination saved!'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
