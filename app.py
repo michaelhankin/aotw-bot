@@ -12,18 +12,18 @@ load_dotenv(dotenv_path=env_path)
 
 app = Flask(__name__)
 
-slack_signing_secret = os.getenv("SLACK_SIGNING_SECRET")
-if slack_signing_secret is None:
+SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
+if SLACK_SIGNING_SECRET is None:
     raise EnvironmentError(
         "SLACK_SIGNING_SECRET environment variable must be set")
 slack_events_adapter = SlackEventAdapter(
-    slack_signing_secret, "/slack/events", app)
+    SLACK_SIGNING_SECRET, "/slack/events", app)
 
-slack_bot_token = os.getenv("SLACK_BOT_TOKEN")
-if slack_bot_token is None:
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
+if SLACK_BOT_TOKEN is None:
     raise EnvironmentError(
         "SLACK_BOT_TOKEN environment variable must be set")
-slack_web_client = WebClient(token=slack_bot_token)
+slack_web_client = WebClient(token=SLACK_BOT_TOKEN)
 
 bot = Bot(slack_web_client)
 
