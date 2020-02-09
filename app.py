@@ -4,6 +4,8 @@ from slackeventsapi import SlackEventAdapter
 from dotenv import load_dotenv
 from pathlib import Path
 from flask import Flask
+from bot import Bot
+import re
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -23,15 +25,13 @@ if slack_bot_token is None:
         "SLACK_BOT_TOKEN environment variable must be set")
 slack_web_client = WebClient(token=slack_bot_token)
 
+bot = Bot(slack_web_client)
+
 
 @slack_events_adapter.on('app_mention')
 def handle_mention(event_data):
     message = event_data["event"]
-
-    if "hi" in message.get("text"):
-        channel = message["channel"]
-        message = "Hello <@%s>!" % message["user"]
-        slack_web_client.chat_postMessage(channel=channel, text=message)
+    bot.handle_message(message)
 
 
 if __name__ == "__main__":
