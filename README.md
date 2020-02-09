@@ -1,6 +1,6 @@
 # aotw-bot
 
-⚠️ WIP ⚠️
+⚠️ **WIP** ⚠️
 
 aotw-bot is a Slack bot which runs an album of the week competition for your team.
 
