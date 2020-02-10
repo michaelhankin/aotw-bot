@@ -23,8 +23,12 @@ class Bot:
 
             nomination = tokens[2]
             self.handle_nomination(channel, nomination)
-        elif 'hi' in text:
-            message = "Hello <@%s>!" % message["user"]
+        elif command == 'ping':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_NOMINATION_ERROR)
+                return
+
+            message = "PONG"
             self.slack_client.chat_postMessage(channel=channel, text=message)
         else:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
