@@ -6,7 +6,7 @@ aotw-bot is a Slack bot which runs an album of the week competition for your tea
 
 ## Running locally
 
-Ensure that you have Python 3.7.x and Pipenv installed, and that the `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET` environment variables are set. Then:
+Ensure that you have Python 3.7.x and Pipenv installed. Then:
 
 ```shell
 # Clone this repo
@@ -14,6 +14,12 @@ git clone https://github.com/michaelhankin/aotw-bot.git
 
 # Navigate into the repo
 cd aotw-bot
+
+# Create your .env
+cp .env.example .env
+
+# Update the values in .env in the text editor of your choice
+# ...
 
 # Install dependencies
 pipenv install
