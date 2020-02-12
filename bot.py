@@ -1,4 +1,4 @@
-INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`.'
+INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`, `ping`.'
 INVALID_NOMINATION_ERROR = 'Invalid nomination format! Nominations must be in the format `nominate <link to album>`.'
 
 
@@ -25,7 +25,7 @@ class Bot:
             self.handle_nomination(channel, nomination)
         elif command == 'ping':
             if len(tokens) > 2:
-                self.handle_error(channel, INVALID_NOMINATION_ERROR)
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
                 return
 
             message = "PONG"
