@@ -3,8 +3,9 @@ INVALID_NOMINATION_ERROR = 'Invalid nomination format! Nominations must be in th
 
 
 class Bot:
-    def __init__(self, slack_client):
+    def __init__(self, slack_client, data_store):
         self.slack_client = slack_client
+        self.data_store = data_store
 
     def handle_message(self, message):
         channel = message['channel']
@@ -33,7 +34,8 @@ class Bot:
         else:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
 
-    def handle_nomination(self, channel, nomination):
+    def handle_nomination(self, channel, user, nomination):
+        self.data_store.save_nomination(nomination, user)
         message = 'Nomination saved!'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
