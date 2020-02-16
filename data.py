@@ -3,8 +3,8 @@ class DataStore:
         self.redis_connection = redis_connection
 
     def save_nomination(self, nomination_url, user_id):
-        current_competition = self.redis_connection.get('aotw-current')
-        if current_competition is None:
-            # TODO create new competition
-
-        self.redis_connection.sadd(f"{user_id}:{nomination_url}")
+        print('nomination URL:', nomination_url)
+        print('user ID:', user_id)
+        result = self.redis_connection.hset(
+            'nominations', user_id, nomination_url)
+        print(result)
