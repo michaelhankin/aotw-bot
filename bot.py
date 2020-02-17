@@ -36,8 +36,11 @@ class Bot:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
 
     def handle_nomination(self, channel, user, nomination):
-        self.data_store.save_nomination(nomination, user)
-        message = 'Nomination saved!'
+        result = self.data_store.save_nomination(nomination, user)
+        if result == 1:
+            message = 'Nomination saved!'
+        else:
+            message = f'Oops, you\'ve already nominated an album this week, <@{user}>'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_error(self, channel, error_message):

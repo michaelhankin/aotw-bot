@@ -3,8 +3,6 @@ class DataStore:
         self.redis_connection = redis_connection
 
     def save_nomination(self, nomination_url, user_id):
-        print('nomination URL:', nomination_url)
-        print('user ID:', user_id)
-        result = self.redis_connection.hset(
+        result = self.redis_connection.hsetnx(
             'nominations', user_id, nomination_url)
-        print(result)
+        return result
