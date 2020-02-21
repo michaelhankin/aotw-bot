@@ -1,10 +1,11 @@
-INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`.'
+INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`, `ping`.'
 INVALID_NOMINATION_ERROR = 'Invalid nomination format! Nominations must be in the format `nominate <link to album>`.'
 
 
 class Bot:
-    def __init__(self, slack_client):
+    def __init__(self, slack_client, data_store):
         self.slack_client = slack_client
+        self.data_store = data_store
 
     def handle_message(self, message):
         channel = message['channel']
@@ -21,16 +22,41 @@ class Bot:
                 self.handle_error(channel, INVALID_NOMINATION_ERROR)
                 return
 
+            user = message['user']
             nomination = tokens[2]
-            self.handle_nomination(channel, nomination)
-        elif 'hi' in text:
-            message = "Hello <@%s>!" % message["user"]
-            self.slack_client.chat_postMessage(channel=channel, text=message)
+            self.handle_nomination(channel, user, nomination)
+        elif command == 'list':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
+                return
+
+            self.handle_list_nominations(channel)
+        elif command == 'ping':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
+                return
+
+            response = "PONG"
+            self.slack_client.chat_postMessage(channel=channel, text=response)
         else:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
 
-    def handle_nomination(self, channel, nomination):
-        message = 'Nomination saved!'
+    def handle_nomination(self, channel, user, nomination):
+        result = self.data_store.save_nomination(nomination, user)
+        if result == 1:
+            message = 'Nomination saved!'
+        else:
+            message = f'Oops, you\'ve already nominated an album this week, <@{user}>'
+        self.slack_client.chat_postMessage(channel=channel, text=message)
+
+    def handle_list_nominations(self, channel):
+        result = self.data_store.list_nominations()
+        if len(result) == 0:
+            message = 'No nominations yet.'
+        else:
+            nomination_list = '\n'.join(
+                [f'- {nomination} nominated by <@{user}>' for (user, nomination) in map(lambda entry: (entry[0].decode('utf-8'), entry[1].decode('utf-8')), result.items())])
+            message = f'Current list of nominations:\n{nomination_list}'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_error(self, channel, error_message):

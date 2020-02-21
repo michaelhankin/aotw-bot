@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from flask import Flask
 from bot import Bot
-import re
+from redis import Redis
+from data import DataStore
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -25,7 +26,21 @@ if SLACK_BOT_TOKEN is None:
         "SLACK_BOT_TOKEN environment variable must be set")
 slack_web_client = WebClient(token=SLACK_BOT_TOKEN)
 
-bot = Bot(slack_web_client)
+REDIS_HOST = os.getenv("REDIS_HOST")
+if REDIS_HOST is None:
+    raise EnvironmentError(
+        "REDIS_HOST environment variable must be set")
+
+REDIS_PORT = os.getenv("REDIS_PORT")
+if REDIS_PORT is None:
+    raise EnvironmentError(
+        "REDIS_PORT environment variable must be set")
+
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+
+r = Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD)
+store = DataStore(r)
+bot = Bot(slack_web_client, store)
 
 
 @slack_events_adapter.on('app_mention')
