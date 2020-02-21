@@ -25,6 +25,12 @@ class Bot:
             user = message['user']
             nomination = tokens[2]
             self.handle_nomination(channel, user, nomination)
+        elif command == 'list':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
+                return
+
+            self.handle_list_nominations(channel)
         elif command == 'ping':
             if len(tokens) > 2:
                 self.handle_error(channel, INVALID_COMMAND_ERROR)
@@ -41,6 +47,16 @@ class Bot:
             message = 'Nomination saved!'
         else:
             message = f'Oops, you\'ve already nominated an album this week, <@{user}>'
+        self.slack_client.chat_postMessage(channel=channel, text=message)
+
+    def handle_list_nominations(self, channel):
+        result = self.data_store.list_nominations()
+        if len(result) == 0:
+            message = 'No nominations yet.'
+        else:
+            nomination_list = '\n'.join(
+                [f'- {nomination} nominated by <@{user}>' for (user, nomination) in map(lambda entry: (entry[0].decode('utf-8'), entry[1].decode('utf-8')), result.items())])
+            message = f'Current list of nominations:\n{nomination_list}'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_error(self, channel, error_message):
