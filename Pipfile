@@ -8,10 +8,10 @@ autopep8 = "*"
 
 [packages]
 slackclient = "*"
-python-dotenv = "*"
 slackeventsapi = "*"
 flask = "*"
 redis = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.7"

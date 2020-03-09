@@ -51,12 +51,21 @@ class Bot:
 
     def handle_list_nominations(self, channel):
         result = self.data_store.list_nominations()
+        print(result)
         if len(result) == 0:
             message = 'No nominations yet.'
         else:
-            nomination_list = '\n'.join(
-                [f'- {nomination} nominated by <@{user}>' for (user, nomination) in map(lambda entry: (entry[0].decode('utf-8'), entry[1].decode('utf-8')), result.items())])
-            message = f'Current list of nominations:\n{nomination_list}'
+            nominations_list = '\n'
+
+            for user_id, nomination in result.items():
+                user_id_str = user_id.decode('utf-8')
+                nomination_str = nomination.decode('utf-8')
+
+                username = self.slack_client.users_info(
+                    user=user_id_str)['user']['profile']['display_name']
+                nominations_list += f'- {nomination_str} nominated by {username}\n'
+
+            message = f'Current list of nominations:\n{nominations_list}'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_error(self, channel, error_message):

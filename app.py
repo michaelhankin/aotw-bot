@@ -1,15 +1,11 @@
 import os
 from slack import WebClient
 from slackeventsapi import SlackEventAdapter
-from dotenv import load_dotenv
 from pathlib import Path
 from flask import Flask
 from bot import Bot
 from redis import Redis
 from data import DataStore
-
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path)
 
 app = Flask(__name__)
 
