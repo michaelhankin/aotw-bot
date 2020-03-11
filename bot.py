@@ -1,5 +1,12 @@
+import random
+
 INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`, `ping`.'
 INVALID_NOMINATION_ERROR = 'Invalid nomination format! Nominations must be in the format `nominate <link to album>`.'
+
+
+def get_slack_display_name(slack_client, user_id):
+    return slack_client.users_info(
+        user=user_id)['user']['profile']['display_name']
 
 
 class Bot:
@@ -31,6 +38,12 @@ class Bot:
                 return
 
             self.handle_list_nominations(channel)
+        elif command == 'select':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
+                return
+
+            self.handle_select_winner(channel)
         elif command == 'ping':
             if len(tokens) > 2:
                 self.handle_error(channel, INVALID_COMMAND_ERROR)
@@ -51,22 +64,43 @@ class Bot:
 
     def handle_list_nominations(self, channel):
         result = self.data_store.list_nominations()
-        print(result)
+
         if len(result) == 0:
             message = 'No nominations yet.'
         else:
             nominations_list = '\n'
 
             for user_id, nomination in result.items():
-                user_id_str = user_id.decode('utf-8')
-                nomination_str = nomination.decode('utf-8')
+                user_id = user_id.decode('utf-8')
+                nomination = nomination.decode('utf-8')
 
-                username = self.slack_client.users_info(
-                    user=user_id_str)['user']['profile']['display_name']
-                nominations_list += f'- {nomination_str} nominated by {username}\n'
+                username = get_slack_display_name(self.slack_client, user_id)
+                nominations_list += f'- {nomination} nominated by {username}\n'
 
             message = f'Current list of nominations:\n{nominations_list}'
         self.slack_client.chat_postMessage(channel=channel, text=message)
+
+    def handle_select_winner(self, channel):
+        nominations = self.data_store.list_nominations()
+
+        if len(nominations) == 0:
+            message = 'No nominations yet.'
+        else:
+            winner = random.choice(list(nominations.items()))
+            print(winner)
+
+            user_id = winner[0].decode('utf-8')
+            nomination_url = winner[1].decode('utf-8')
+
+            username = get_slack_display_name(self.slack_client, user_id)
+            message = f'The winner is {nomination_url} nominated by {username}!'
+            print(message)
+
+            self.data_store.store_winner(user_id, nomination_url)
+            self.data_store.clear_nominations()
+
+            self.slack_client.chat_postMessage(
+                channel=channel, text=message)
 
     def handle_error(self, channel, error_message):
         self.slack_client.chat_postMessage(channel=channel, text=error_message)
