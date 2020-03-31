@@ -1,7 +1,11 @@
+import json
 import random
+import re
+from urllib.parse import urlparse
 
-INVALID_COMMAND_ERROR = 'Invalid command! Supported commands are: `nominate`, `ping`.'
-INVALID_NOMINATION_ERROR = 'Invalid nomination format! Nominations must be in the format `nominate <link to album>`.'
+INVALID_COMMAND_ERROR = 'Invalid command. I support the following commands: `nominate`, `ping`.'
+INVALID_NOMINATION_COMMAND_ERROR = 'Invalid nomination command. I can only accept nominations in the format `nominate <link to album>`.'
+INVALID_NOMINATION_ERROR = 'Invalid nomination. I only accept Spotify URLs as nominations at the moment.'
 
 
 def get_slack_display_name(slack_client, user_id):
@@ -26,7 +30,7 @@ class Bot:
 
         if command == 'nominate':
             if len(tokens) > 3:
-                self.handle_error(channel, INVALID_NOMINATION_ERROR)
+                self.handle_error(channel, INVALID_NOMINATION_COMMAND_ERROR)
                 return
 
             user = message['user']
@@ -55,6 +59,15 @@ class Bot:
             self.handle_error(channel, INVALID_COMMAND_ERROR)
 
     def handle_nomination(self, channel, user, nomination):
+        # Unpack Slack's formatted URL
+        url = urlparse(nomination[1:-1].split('|')[0])
+        parts = url.netloc.split('.')
+
+        # As of right now, we expect `nomination` to be a Spotify URL
+        if len(parts) < 3 or not parts[1] == 'spotify':
+            self.handle_error(channel, INVALID_NOMINATION_ERROR)
+            return
+
         result = self.data_store.save_nomination(nomination, user)
         if result == 1:
             message = 'Nomination saved!'
