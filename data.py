@@ -14,3 +14,6 @@ class DataStore:
 
     def store_winner(self, user_id, nomination_url):
         return self.redis_connection.rpush('winners', f'{user_id} {nomination_url}')
+
+    def list_winners(self):
+        return self.redis_connection.lrange('winners', 0, -1)

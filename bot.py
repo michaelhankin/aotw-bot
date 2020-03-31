@@ -35,6 +35,7 @@ class Bot:
 
             user = message['user']
             nomination = tokens[2]
+
             self.handle_nomination(channel, user, nomination)
         elif command == 'list':
             if len(tokens) > 2:
@@ -48,6 +49,12 @@ class Bot:
                 return
 
             self.handle_select_winner(channel)
+        elif command == 'winners':
+            if len(tokens) > 2:
+                self.handle_error(channel, INVALID_COMMAND_ERROR)
+                return
+
+            self.handle_list_winners(channel)
         elif command == 'ping':
             if len(tokens) > 2:
                 self.handle_error(channel, INVALID_COMMAND_ERROR)
@@ -72,7 +79,7 @@ class Bot:
         if result == 1:
             message = 'Nomination saved!'
         else:
-            message = f'Oops, you\'ve already nominated an album this week, <@{user}>'
+            message = f'Oops, you\'ve already nominated an album this week, <@{user}>.'
         self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_list_nominations(self, channel):
@@ -100,20 +107,37 @@ class Bot:
             message = 'No nominations yet.'
         else:
             winner = random.choice(list(nominations.items()))
-            print(winner)
 
             user_id = winner[0].decode('utf-8')
             nomination_url = winner[1].decode('utf-8')
 
             username = get_slack_display_name(self.slack_client, user_id)
             message = f'The winner is {nomination_url} nominated by {username}!'
-            print(message)
 
             self.data_store.store_winner(user_id, nomination_url)
             self.data_store.clear_nominations()
 
-            self.slack_client.chat_postMessage(
-                channel=channel, text=message)
+        self.slack_client.chat_postMessage(
+            channel=channel, text=message)
+
+    def handle_list_winners(self, channel):
+        winners = self.data_store.list_winners()
+
+        if len(winners) == 0:
+            message = 'No winners yet.'
+        else:
+            winners_list = '\n'
+
+            for entry in winners:
+                user, nomination = entry.decode('utf-8').split(' ')
+                user = get_slack_display_name(
+                    self.slack_client, user)
+
+                winners_list += f'- {nomination} nominated by {user}\n'
+
+            message = f'Past winners:\n{winners_list}'
+
+        self.slack_client.chat_postMessage(channel=channel, text=message)
 
     def handle_error(self, channel, error_message):
         self.slack_client.chat_postMessage(channel=channel, text=error_message)
