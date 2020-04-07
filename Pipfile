@@ -12,6 +12,7 @@ slackeventsapi = "*"
 flask = "*"
 redis = "*"
 python-dotenv = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
