@@ -23,18 +23,18 @@ if SLACK_BOT_TOKEN is None:
 slack_web_client = WebClient(token=SLACK_BOT_TOKEN)
 
 REDIS_HOST = os.getenv("REDIS_HOST")
-if REDIS_HOST is None:
-    raise EnvironmentError(
-        "REDIS_HOST environment variable must be set")
-
 REDIS_PORT = os.getenv("REDIS_PORT")
-if REDIS_PORT is None:
+
+REDIS_URL = os.getenv("REDIS_URL")
+if REDIS_URL is None or (REDIS_HOST is None and REDIS_PORT is None):
     raise EnvironmentError(
-        "REDIS_PORT environment variable must be set")
+        "Either REDIS_URL or REDIS_HOST and REDIS_PORT environment variables must be set")
 
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 
-r = Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD)
+redis_args = {'url': REDIS_URL} if REDIS_URL is not None else {
+    'host': REDIS_HOST, 'port': REDIS_PORT}
+r = Redis(**redis_args, password=REDIS_PASSWORD)
 store = DataStore(r)
 bot = Bot(slack_web_client, store)
 
