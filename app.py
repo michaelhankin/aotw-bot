@@ -7,6 +7,8 @@ from bot import Bot
 from redis import Redis
 from data import DataStore
 
+print("Hello GitHub!")
+
 app = Flask(__name__)
 
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
